@@ -16,10 +16,13 @@ CREATE TABLE IF NOT EXISTS moods (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     mood INT NOT NULL,
-    date DATE NOT NULL,
+    date DATETIME NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- Insert initial test data
 INSERT INTO users (username, password) VALUES ('test_user', 'hashed_password');
 INSERT INTO moods (user_id, mood, date) VALUES (1, 7, CURDATE());
+
+
+
