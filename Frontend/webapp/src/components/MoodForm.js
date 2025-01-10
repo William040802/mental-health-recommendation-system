@@ -3,29 +3,31 @@ import React, { useState } from 'react';
 const MoodForm = ({ onSubmit }) => {
   const [mood, setMood] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (mood) {
-      onSubmit({ mood: parseInt(mood), date: new Date().toLocaleDateString() }); // Ensure mood is a number
-      setMood(''); // Clear the input
-    }
-  };
+  const handleSubmit = async (mood) => {
+    const token = localStorage.getItem('token'); // Retrieve token
+    console.log('Token being sent:', token); // Debugging log
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="mood">Enter your mood (1-10):</label>
-      <input
-        type="number"
-        id="mood"
-        value={mood}
-        onChange={(e) => setMood(e.target.value)}
-        placeholder="e.g., 7"
-        min="1"
-        max="10"
-      />
-      <button type="submit">Submit</button>
-    </form>
-  );
+    try {
+        const response = await fetch('http://localhost:5000/moods', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`, // Attach the token
+            },
+            body: JSON.stringify({ mood }),
+        });
+
+        if (response.ok) {
+            console.log('Mood added successfully');
+        } else {
+            const errorText = await response.text();
+            console.error('Error adding mood:', errorText);
+        }
+    } catch (error) {
+        console.error('Error adding mood:', error);
+    }
+}
+
 };
 
 export default MoodForm;

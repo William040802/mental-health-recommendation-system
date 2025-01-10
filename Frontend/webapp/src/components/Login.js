@@ -5,7 +5,7 @@ function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
-    const navigate = useNavigate(); // Initialize navigation
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,11 +19,12 @@ function Login() {
 
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem('token', data.token); // Save token in local storage
+                console.log('Token received:', data.token); // Debugging log
+                localStorage.setItem('token', data.token); // Save token to localStorage
                 setMessage('Login successful! Redirecting...');
                 setTimeout(() => {
-                    navigate('/home'); // Redirect to Home after success
-                }, 1500); // Add a slight delay for the message to show
+                    navigate('/home'); // Redirect to the protected route
+                }, 1500);
             } else {
                 const errorMessage = await response.text();
                 setMessage(`Error: ${errorMessage}`);

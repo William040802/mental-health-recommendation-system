@@ -17,19 +17,23 @@ ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Title, T
 const MoodChart = ({ moodData = [] }) => {
   console.log('MoodChart received data:', moodData); // Debugging log
 
+  // Prepare data for the chart
   const data = {
-    labels: moodData.map((entry) => entry.date), // X-axis: Dates
+    labels: moodData.map((entry) => new Date(entry.date).toLocaleString()), // Include time for uniqueness
     datasets: [
-      {
-        label: 'Mood over Time',
-        data: moodData.map((entry) => entry.mood), // Y-axis: Mood values
-        fill: false,
-        borderColor: 'blue', // Line color
-        tension: 0.4, // Smooth curve
-      },
+        {
+            label: 'Mood over Time',
+            data: moodData.map((entry) => entry.mood),
+            borderColor: 'blue',
+            backgroundColor: 'rgba(0, 123, 255, 0.2)',
+            tension: 0.4,
+            pointRadius: 5,
+        },
     ],
-  };
+};
 
+
+  // Chart options
   const options = {
     responsive: true,
     plugins: {
@@ -38,10 +42,29 @@ const MoodChart = ({ moodData = [] }) => {
         position: 'top',
       },
     },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Date',
+        },
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Mood Level',
+        },
+        min: 0, // Ensure minimum value
+        max: 10, // Assume mood is on a scale of 0-10
+        ticks: {
+          stepSize: 1, // Steps for Y-axis
+        },
+      },
+    },
   };
 
   return (
-    <div>
+    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       <h2>Mood Trends</h2>
       <Line data={data} options={options} />
     </div>

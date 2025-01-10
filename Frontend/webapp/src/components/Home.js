@@ -3,8 +3,8 @@ import React from 'react';
 function Home() {
     return (
         <div style={{ textAlign: 'center', marginTop: '50px' }}>
-            <h2>Welcome to the Dashboard!</h2>
-            <p>You are successfully logged in.</p>
+            <h2>Personalized Mental Health Insights!</h2>
+            <p>So far, you can use the tool Mood Tracker to enter your moods and see a graph over time of your mood.</p>
         </div>
     );
 }
