@@ -9,7 +9,11 @@ const app = express();
 const PORT = 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000', // Replace with your frontend's URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Authorization', 'Content-Type'], // Allow Authorization header
+}));
 app.use(bodyParser.json());
 
 // Database Connection
@@ -33,21 +37,32 @@ db.connect((err) => {
 const authenticateToken = (req, res, next) => {
     console.log('authenticateToken middleware invoked'); // Debug log
     const authHeader = req.header('Authorization');
-    const token = authHeader?.split(' ')[0];
-    console.log('Full Authorization header:', req.header('Authorization'));
-    console.log('JWT_SECRET during token verification:', process.env.JWT_SECRET);
+    console.log('Full Authorization header:', authHeader); // Debug log
 
+    if (!authHeader) {
+        console.error('Authorization header is missing');
+        return res.status(401).send('Access Denied: No token provided');
+    }
 
+    const token = authHeader.startsWith('Bearer ')
+        ? authHeader.split(' ')[1]
+        : authHeader; // Fallback for tokens without Bearer prefix
 
     if (!token) {
-        console.error('No token provided');
-        return res.status(401).send('Access Denied');
+        console.error('Token is missing after extraction');
+        return res.status(401).send('Access Denied: Token is missing');
     }
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
             console.error('Invalid Token:', err.message);
-            return res.status(403).send('Invalid Token');
+            if (err.name === 'JsonWebTokenError') {
+                return res.status(400).send('Invalid Token: Malformed or invalid signature');
+            } else if (err.name === 'TokenExpiredError') {
+                return res.status(401).send('Invalid Token: Token has expired');
+            } else {
+                return res.status(403).send('Invalid Token: Verification failed');
+            }
         }
         console.log('Authenticated user:', user); // Debug log
         req.user = user;
@@ -126,12 +141,24 @@ app.post('/moods', authenticateToken, (req, res) => {
     const date = new Date(); // Capture precise timestamp
     const query = 'INSERT INTO moods (user_id, mood, date) VALUES (?, ?, ?)';
 
-    db.query(query, [userId, mood, date], (err) => {
+    db.query(query, [userId, mood, date], (err, results) => {
         if (err) {
             console.error('Error saving mood:', err);
-            return res.status(500).send('Error saving mood data');
+            return res.status(500).json({ error: 'Error saving mood data' });
         }
-        res.send('Mood added successfully');
+
+        console.log('Mood added successfully for user:', userId);
+
+        // Send a proper JSON response
+        res.status(201).json({
+            message: 'Mood added successfully',
+            mood: {
+                id: results.insertId || null, // Use the inserted ID if available
+                userId,
+                mood,
+                date,
+            },
+        });
     });
 });
 

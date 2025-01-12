@@ -40,15 +40,29 @@ const Home = () => {
   }, []);
 
   const addMood = (newMood) => {
-    setMoodData((prev) => [...prev, newMood]);
+    console.log('Adding mood:', newMood);
+    setMoodData((prev) => {
+      const updatedData = [...prev, newMood];
+      console.log('Updated moodData:', updatedData);
+      return updatedData;
+    });
   };
+
+  useEffect(() => {
+    console.log('Current moodData:', moodData);
+  }, [moodData]);
 
   return (
     <div>
       <h1>Welcome to the Mood Tracker!</h1>
       {message && <p style={{ color: 'red' }}>{message}</p>}
       <MoodForm onSubmit={addMood} />
-      <MoodChart moodData={moodData} />
+      {/* Debugging: Add a default chart if moodData is empty */}
+      {moodData.length > 0 ? (
+        <MoodChart moodData={moodData} />
+      ) : (
+        <p>Loading mood data...</p>
+      )}
     </div>
   );
 };
